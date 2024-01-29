@@ -360,6 +360,7 @@ struct sde_crtc {
 	/* blob for histogram data */
 	struct drm_property_blob *hist_blob;
 	enum frame_trigger_mode_type frame_trigger_mode;
+	bool is_primary_sde_crtc;
 
 	u32 cp_pu_feature_mask;
 	struct msm_roi_list cached_user_roi_list;
@@ -434,6 +435,9 @@ struct sde_crtc_state {
 	uint32_t num_ds;
 	uint32_t num_ds_enabled;
 	bool ds_dirty;
+	bool finger_down;
+	bool dim_layer_status;
+	struct sde_hw_dim_layer *fingerprint_dim_layer;
 	struct sde_hw_ds_cfg ds_cfg[SDE_MAX_DS_COUNT];
 	struct sde_hw_scaler3_lut_cfg scl3_lut_cfg;
 
@@ -617,7 +621,13 @@ struct drm_crtc *sde_crtc_init(struct drm_device *dev, struct drm_plane *plane);
  * @crtc: Pointer to drm crtc structure
  */
 int sde_crtc_post_init(struct drm_device *dev, struct drm_crtc *crtc);
-
+/**
+ * sde_crtc_fod_ui_ready - callback to notify fod ui ready message
+ * @crtc: Pointer to drm crtc object
+ * @old_state: Pointer to drm crtc old state object
+ */
+void sde_crtc_fod_ui_ready(struct drm_crtc *crtc,
+		struct drm_crtc_state *old_state);
 /**
  * sde_crtc_complete_flip - complete flip for clients
  * @crtc: Pointer to drm crtc object
