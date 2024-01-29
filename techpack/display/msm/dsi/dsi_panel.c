@@ -12,6 +12,7 @@
 #include <linux/of_gpio.h>
 #include <linux/pwm.h>
 #include <video/mipi_display.h>
+#include <linux/leds.h>
 
 #include "dsi_panel.h"
 #include "dsi_display.h"
@@ -19,12 +20,12 @@
 #include "dsi_parser.h"
 #include "sde_dbg.h"
 
-
 #include <linux/fs.h>
 #include <asm/uaccess.h>
 #include <asm/fcntl.h>
 
 #include <drm/drm_notifier.h>
+#include <soc/qcom/socinfo.h>
 
 #define DSI_READ_WRITE_PANEL_DEBUG 1
 #if DSI_READ_WRITE_PANEL_DEBUG
@@ -2692,8 +2693,8 @@ static int dsi_panel_parse_bl_config(struct dsi_panel *panel)
 			 panel->name, bl_type);
 		panel->bl_config.type = DSI_BACKLIGHT_UNKNOWN;
 	}
-	
-	panel->bl_config.dcs_type_ss = of_property_read_bool(of_node,
+
+	panel->bl_config.dcs_type_ss = utils->read_bool(utils->data,
 						"qcom,mdss-dsi-bl-dcs-type-ss");
 
 	data = utils->get_property(utils->data, "qcom,bl-update-flag", NULL);
@@ -3615,6 +3616,7 @@ int dsi_panel_parse_elvss_dimming_read_configs(struct dsi_panel *panel,
 {
 	int rc = 0;
 	struct dsi_read_config *elvss_dimming_cmds;
+	struct dsi_parser_utils *utils = &panel->utils;
 	if (!panel || !of_node) {
 		pr_err("Invalid Params\n");
 		return -EINVAL;
@@ -3625,7 +3627,7 @@ int dsi_panel_parse_elvss_dimming_read_configs(struct dsi_panel *panel,
 		return -EINVAL;
 
 	dsi_panel_parse_cmd_sets_sub(&panel->elvss_dimming_offset,
-				DSI_CMD_SET_ELVSS_DIMMING_OFFSET, of_node);
+				DSI_CMD_SET_ELVSS_DIMMING_OFFSET, utils);
 	if (!panel->elvss_dimming_offset.count) {
 		pr_err("elvss dimming offset command parsing failed\n");
 		return -EINVAL;
@@ -3639,7 +3641,7 @@ int dsi_panel_parse_elvss_dimming_read_configs(struct dsi_panel *panel,
 	}
 
 	dsi_panel_parse_cmd_sets_sub(&elvss_dimming_cmds->read_cmd,
-					DSI_CMD_SET_ELVSS_DIMMING_READ, of_node);
+					DSI_CMD_SET_ELVSS_DIMMING_READ, utils);
 	if (!elvss_dimming_cmds->read_cmd.count) {
 		pr_err("elvss dimming command parsing failed\n");
 		return -EINVAL;
@@ -3662,7 +3664,7 @@ static int dsi_panel_parse_esd_config(struct dsi_panel *panel)
 	esd_config->status_mode = ESD_MODE_MAX;
 	
 	/* esd-err-flag method will be prefered */
-	esd_config->esd_err_irq_gpio= of_get_named_gpio_flags(of_node,
+	esd_config->esd_err_irq_gpio = of_get_named_gpio_flags(panel->panel_of_node,
 				"qcom,esd-err-irq-gpio", 0, (enum of_gpio_flags *)&(esd_config->esd_interrupt_flags));
 	if (gpio_is_valid(esd_config->esd_err_irq_gpio)) {
 		esd_config->esd_err_irq = gpio_to_irq(esd_config->esd_err_irq_gpio);
@@ -3843,7 +3845,7 @@ struct dsi_panel *dsi_panel_get(struct device *parent,
 		panel->name = DSI_PANEL_DEFAULT_LABEL;
 	panel_model = of_get_property(of_node, "qcom,mdss-dsi-panel-model", NULL);
 
-	dispparam_enabled = of_property_read_bool(of_node,
+	dispparam_enabled = utils->read_bool(utils->data,
 								"qcom,dispparam-enabled");
 	if (dispparam_enabled){
 			pr_info("[LCD]%s:%d Dispparam enabled.\n", __func__, __LINE__);
@@ -3880,7 +3882,7 @@ struct dsi_panel *dsi_panel_get(struct device *parent,
 		pr_info("fod_off_dimming_delay %d\n", panel->fod_off_dimming_delay);
 	}
 
-	fod_crc_p3_gamut_calibration = of_property_read_bool(of_node,
+	fod_crc_p3_gamut_calibration = utils->read_bool(utils->data,
 		"qcom,disp-fod-crc-p3-gamut-calibration");
 	if (fod_crc_p3_gamut_calibration) {
 		pr_info("[LCD]%s:%d fod_crc_p3_gamut_calibration enabled.\n", __func__, __LINE__);
@@ -3899,7 +3901,7 @@ struct dsi_panel *dsi_panel_get(struct device *parent,
 		pr_info("dc backlight threshold %d \n", panel->dc_threshold);
 	}
 
-	panel->fod_dimlayer_enabled = of_property_read_bool(of_node,
+	panel->fod_dimlayer_enabled = utils->read_bool(utils->data,
 		"qcom,mdss-dsi-panel-fod-dimlayer-enabled");
 	if (panel->fod_dimlayer_enabled) {
 		pr_info("fod dimlayer enabled.\n");
@@ -3997,7 +3999,7 @@ struct dsi_panel *dsi_panel_get(struct device *parent,
 	rc = dsi_panel_parse_esd_config(panel);
 	if (rc)
 		DSI_DEBUG("failed to parse esd config, rc=%d\n", rc);
-		
+
 	rc = dsi_panel_parse_elvss_dimming_config(panel, of_node);
 	if (rc)
 		DSI_DEBUG("failed to parse elvss dimming config, rc=%d\n", rc);

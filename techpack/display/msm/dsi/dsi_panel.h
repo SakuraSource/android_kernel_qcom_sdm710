@@ -25,6 +25,7 @@
 #define MAX_BL_LEVEL 4096
 #define MAX_BL_SCALE_LEVEL 1024
 #define MAX_SV_BL_SCALE_LEVEL 65535
+#define MAX_AD_BL_SCALE_LEVEL 65535
 #define DSI_CMD_PPS_SIZE 135
 
 #define DSI_MODE_MAX 32
@@ -125,6 +126,7 @@ struct dsi_backlight_config {
 	u32 bl_level;
 	u32 bl_scale;
 	u32 bl_scale_sv;
+	u32 bl_scale_ad;
 	bool bl_inverted_dbv;
 	u32 bl_dcs_subtype;
 
@@ -223,6 +225,7 @@ struct dsi_panel {
 	struct dsi_parser_utils utils;
 
 	bool lp11_init;
+	bool ulps_enabled;
 	bool ulps_feature_enabled;
 	bool ulps_suspend_enabled;
 	bool allow_phy_power_off;

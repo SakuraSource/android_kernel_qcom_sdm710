@@ -9,6 +9,7 @@
 #include <linux/of_gpio.h>
 #include <linux/err.h>
 #include <drm/drm_notifier.h>
+#include <drm/drm_print.h>
 
 #include "msm_drv.h"
 #include "sde_connector.h"
@@ -22,6 +23,7 @@
 #include "dsi_pwr.h"
 #include "sde_dbg.h"
 #include "dsi_parser.h"
+#include "dsi_panel.h"
 
 #define to_dsi_display(x) container_of(x, struct dsi_display, host)
 #define INT_BASE_10 10
@@ -209,7 +211,7 @@ int dsi_display_set_backlight(struct drm_connector *connector,
 	struct dsi_display *dsi_display = display;
 	struct dsi_panel *panel;
 	struct drm_device *drm_dev;
-	u32 bl_scale, bl_scale_sv;
+	u32 bl_scale, bl_scale_sv, bl_scale_ad;
 	u64 bl_temp;
 	int rc = 0;
 
@@ -234,6 +236,9 @@ int dsi_display_set_backlight(struct drm_connector *connector,
 
 	bl_scale_sv = panel->bl_config.bl_scale_sv;
 	/* bl_temp = (u32)bl_temp * bl_scale_sv / MAX_SV_BL_SCALE_LEVEL;*/
+
+	bl_scale_ad = panel->bl_config.bl_scale_ad;
+	bl_temp = (u32)bl_temp * bl_scale_ad / MAX_AD_BL_SCALE_LEVEL;
 
 	DSI_DEBUG("bl_scale = %u, bl_scale_sv = %u, bl_lvl = %u\n",
 		bl_scale, bl_scale_sv, (u32)bl_temp);
