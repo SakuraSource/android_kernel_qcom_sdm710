@@ -347,4 +347,19 @@ int socinfo_get_feature_code(void);
 int socinfo_get_pcode(void);
 char *socinfo_get_partinfo_details(unsigned int part_id);
 
+#define HARDWARE_PLATFORM_UNKNOWN 0
+#define HARDWARE_PLATFORM_SIRIUS 2
+#define HARDWARE_PLATFORM_GRUS  3
+#define HARDWARE_PLATFORM_PYXIS  4
+#define HARDWARE_PLATFORM_VELA  7
+
+#define HW_MAJOR_VERSION_SHIFT 16
+#define HW_MAJOR_VERSION_MASK  0xFFFF0000
+#define HW_MINOR_VERSION_SHIFT 0
+#define HW_MINOR_VERSION_MASK  0x0000FFFF
+
+uint32_t get_hw_version_platform(void);
+uint32_t get_hw_version_major(void);
+uint32_t get_hw_version_minor(void);
+
 #endif
