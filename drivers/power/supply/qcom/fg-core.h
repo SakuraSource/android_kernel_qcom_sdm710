@@ -97,6 +97,12 @@ enum prof_load_status {
 	PROFILE_SKIPPED,
 	PROFILE_NOT_LOADED,
 };
+#define VBAT_RESTART_FG_EMPTY_UV		3700000
+#define TEMP_THR_RESTART_FG		150
+#define RESTART_FG_START_WORK_MS		1000
+#define RESTART_FG_WORK_MS		2000
+#define VBAT_CRITICAL_LOW_THR		2800
+#define EMPTY_DEBOUNCE_TIME_COUNT_MAX	5
 
 /* Debug flag definitions */
 enum fg_debug_flag {
@@ -332,6 +338,7 @@ struct fg_batt_props {
 	int		therm_pull_up_kohms;
 	int		*rslow_normal_coeffs;
 	int		*rslow_low_coeffs;
+	int		nom_cap_uah;
 };
 
 struct fg_cyc_ctr_data {
@@ -340,6 +347,7 @@ struct fg_cyc_ctr_data {
 	u16		count[BUCKET_COUNT];
 	u8		last_soc[BUCKET_COUNT];
 	char		counter[BUCKET_COUNT * 8];
+	int             id;
 	struct mutex	lock;
 };
 
@@ -422,6 +430,22 @@ struct fg_memif {
 	u8			num_bytes_per_word;
 };
 
+#define BATT_MA_AVG_SAMPLES		8
+struct batt_params {
+	bool		update_now;
+	int		batt_raw_soc;
+	int		batt_soc;
+	int		samples_num;
+	int		samples_index;
+	int		batt_ma_avg_samples[BATT_MA_AVG_SAMPLES];
+	int		batt_ma_avg;
+	int		batt_ma_prev;
+	int		batt_ma;
+	int		batt_mv;
+	int		batt_temp;
+	struct timespec		last_soc_change_time;
+};
+
 struct fg_dev {
 	struct thermal_zone_device	*tz_dev;
 	struct device		*dev;
@@ -473,6 +497,7 @@ struct fg_dev {
 	int			last_msoc;
 	int			last_recharge_volt_mv;
 	int			delta_temp_irq_count;
+	int			vbat_critical_low_count;
 	enum esr_filter_status	esr_flt_sts;
 	bool			profile_available;
 	enum prof_load_status	profile_load_status;
@@ -484,19 +509,27 @@ struct fg_dev {
 	bool			use_ima_single_mode;
 	bool			usb_present;
 	bool			twm_state;
+	bool			report_full;
 	bool			use_dma;
 	bool			qnovo_enable;
 	enum fg_version		version;
 	bool			suspended;
+	bool			empty_restart_fg;
+	struct batt_params	param;
+	struct delayed_work	soc_monitor_work;
 	struct completion	soc_update;
 	struct completion	soc_ready;
 	struct delayed_work	profile_load_work;
 	struct work_struct	status_change_work;
 	struct work_struct	esr_sw_work;
+	struct delayed_work	esr_timer_config_work;
 	struct delayed_work	sram_dump_work;
 	struct work_struct	esr_filter_work;
+	struct work_struct	vbat_sync_work;
 	struct alarm		esr_filter_alarm;
 	ktime_t			last_delta_temp_time;
+	struct delayed_work     soc_work;
+	struct delayed_work	empty_restart_fg_work;
 };
 
 /* Debugfs data structures are below */
