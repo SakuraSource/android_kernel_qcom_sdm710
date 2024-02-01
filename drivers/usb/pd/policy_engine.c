@@ -382,6 +382,7 @@ struct usbpd {
 	struct work_struct	sm_work;
 	struct work_struct	start_periph_work;
 	struct work_struct	restart_host_work;
+	struct delayed_work	vbus_work;
 	struct hrtimer		timer;
 	bool			sm_queued;
 
@@ -4623,6 +4624,28 @@ static struct class usbpd_class = {
 	.dev_uevent = usbpd_uevent,
 	.dev_groups = usbpd_groups,
 };
+
+struct usbpd *pd_lobal;
+void kick_usbpd_vbus_sm(void)
+{
+	pm_stay_awake(&pd_lobal->dev);
+
+	/* to be done pd_lobal->sm_queued = true;*/
+	pr_err("kick_usbpd_vbus_sm handle state %s, vbus %d\n",
+			usbpd_state_strings[pd_lobal->current_state],pd_lobal->vbus_enabled);
+
+	queue_delayed_work(pd_lobal->wq, &(pd_lobal->vbus_work), msecs_to_jiffies(200));
+}
+
+void notify_typec_mode_changed_for_pd(void)
+{
+	/* force update as usb present is changed to absent */
+	if (pd_lobal) {
+		pr_info("notify_typec_mode_changed_for_pd\n");
+		psy_changed(&pd_lobal->psy_nb, PSY_EVENT_PROP_CHANGED, pd_lobal->usb_psy);
+	}
+}
+EXPORT_SYMBOL_GPL(notify_typec_mode_changed_for_pd);
 
 static int match_usbpd_device(struct device *dev, const void *data)
 {

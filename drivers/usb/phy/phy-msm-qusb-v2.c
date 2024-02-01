@@ -147,6 +147,10 @@ struct qusb_phy {
 	u8                      bias_ctrl2;
 
 	bool			override_bias_ctrl2;
+
+	/*xiaomi: debug fs for imp_ctr and pll_bais*/
+	u8                      imp_ctrl;
+	u8                      pll_bias;
 };
 
 static void qusb_phy_enable_clocks(struct qusb_phy *qphy, bool on)
