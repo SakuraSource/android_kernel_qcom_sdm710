@@ -68,7 +68,7 @@
 		qcom,mdss-pan-physical-height-dimension = <131>;
 		qcom,mdss-dsi-pan-enable-dynamic-fps;
 		qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
-		qcom,dsi-supported-dfps-list = <55 60>;
+		qcom,dsi-supported-dfps-list = <60 55>;
 
 		qcom,config-select = <&dsi_dual_nt35597_video_config0>;
 
