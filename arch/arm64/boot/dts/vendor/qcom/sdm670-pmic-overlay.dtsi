@@ -26,7 +26,6 @@
 };
 
 &pm660_fg {
-	qcom,hold-soc-while-full;
 	qcom,fg-auto-recharge-soc;
 	qcom,fg-recharge-soc-thr = <98>;
 };
