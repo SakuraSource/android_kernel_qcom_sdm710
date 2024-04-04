@@ -66,10 +66,9 @@
 		qcom,mdss-dsi-reset-sequence = <1 10>, <0 10>, <1 10>;
 		qcom,mdss-pan-physical-width-dimension = <74>;
 		qcom,mdss-pan-physical-height-dimension = <131>;
-		qcom,mdss-dsi-min-refresh-rate = <55>;
-		qcom,mdss-dsi-max-refresh-rate = <60>;
 		qcom,mdss-dsi-pan-enable-dynamic-fps;
 		qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
+		qcom,dsi-supported-dfps-list = <55 60>;
 
 		qcom,config-select = <&dsi_dual_nt35597_video_config0>;
 
