@@ -100,6 +100,11 @@
 			qcom,gpios-disallowed = <1 5 7 8 10>;
 		};
 
+		pm660_coincell: qcom,coincell@2800 {
+			compatible = "qcom,qpnp-coincell";
+			reg = <0x2800 0x100>;
+		};
+
 		pm660_rtc: qcom,pm660_rtc {
 			compatible = "qcom,pm8941-rtc";
 			interrupts = <0x0 0x61 0x1 IRQ_TYPE_NONE>;
