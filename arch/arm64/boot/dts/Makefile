@@ -34,7 +34,7 @@ subdir-y += zte
 
 else
         subdir-y += vendor
-	subdir-y += xiaomi
+#	subdir-y += xiaomi
 endif
 
 dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(dtstree)/%.dts,%.dtb, $(foreach d,$(subdir), $(wildcard $(dtstree)/$(d)/*.dts)))
