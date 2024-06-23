@@ -1874,7 +1874,7 @@
 		};
 
 		clock_rpmh: qcom,rpmhclk {
-			compatible = "qcom,sdm845-rpmh-clk";
+			compatible = "qcom,rpmh-clk-sdm670";
 			#clock-cells = <1>;
 		};
 	};
