@@ -47,6 +47,11 @@ struct clk_rpmh {
 	struct clk_rpmh *peer;
 };
 
+struct rpmh_cc {
+	struct clk_onecell_data data;
+	struct clk *clks[];
+};
+
 struct clk_rpmh_desc {
 	struct clk_hw **clks;
 	size_t num_clks;
@@ -379,24 +384,66 @@ static struct clk_hw *of_clk_rpmh_hw_get(struct of_phandle_args *clkspec,
 	return rpmh->clks[idx];
 }
 
+static void clk_rpmh_sdm670_fixup_sdm670(void)
+{
+	sdm845_rpmh_clocks[RPMH_RF_CLK3] = NULL;
+	sdm845_rpmh_clocks[RPMH_RF_CLK3_A] = NULL;
+}
+
+static int clk_rpmh_sdm670_fixup(struct platform_device *pdev)
+{
+	const char *compat = NULL;
+	int compatlen = 0;
+
+	compat = of_get_property(pdev->dev.of_node, "compatible", &compatlen);
+	if (!compat || (compatlen <= 0))
+		return -EINVAL;
+
+	if (!strcmp(compat, "qcom,rpmh-clk-sdm670"))
+		clk_rpmh_sdm670_fixup_sdm670();
+
+	return 0;
+}
+
 static int clk_rpmh_probe(struct platform_device *pdev)
 {
+	struct clk **clks;
 	struct clk_hw **hw_clks;
 	struct clk_rpmh *rpmh_clk;
 	const struct clk_rpmh_desc *desc;
-	int ret, i;
+	struct rpmh_cc *rcc;
+	struct clk_onecell_data *data;
+	int ret;
+	size_t num_clks, i;
 
 	desc = of_device_get_match_data(&pdev->dev);
 	if (!desc)
 		return -ENODEV;
 
+	ret = clk_rpmh_sdm670_fixup(pdev);
+	if (ret)
+		return ret;
+
 	hw_clks = desc->clks;
+	num_clks = desc->num_clks;
+
+	rcc = devm_kzalloc(&pdev->dev, sizeof(*rcc) + sizeof(*clks) * num_clks,
+			   GFP_KERNEL);
+	if (!rcc)
+		return -ENOMEM;
+
+	clks = rcc->clks;
+	data = &rcc->data;
+	data->clks = clks;
+	data->clk_num = num_clks;
 
 	for (i = 0; i < desc->num_clks; i++) {
 		u32 res_addr;
 
-		if (!hw_clks[i])
+		if (!hw_clks[i]) {
+			clks[i] = ERR_PTR(-ENOENT);
 			continue;
+		}
 
 		rpmh_clk = to_clk_rpmh(hw_clks[i]);
 		res_addr = cmd_db_read_addr(rpmh_clk->res_name);
@@ -433,6 +480,7 @@ static int clk_rpmh_probe(struct platform_device *pdev)
 
 static const struct of_device_id clk_rpmh_match_table[] = {
 	{ .compatible = "qcom,sdm845-rpmh-clk", .data = &clk_rpmh_sdm845},
+	{ .compatible = "qcom,rpmh-clk-sdm670", .data = &clk_rpmh_sdm845},
 	{ .compatible = "qcom,kona-rpmh-clk", .data = &clk_rpmh_kona},
 	{ .compatible = "qcom,lito-rpmh-clk", .data = &clk_rpmh_lito},
 	{ .compatible = "qcom,lagoon-rpmh-clk", .data = &clk_rpmh_lagoon},
