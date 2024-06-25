@@ -240,16 +240,8 @@
 	};
 };
 
-&removed_region {
-	reg = <0 0x86200000 0 0x40000>;
-};
-
-&smem_mem {
-	reg = <0 0x86240000 0 0x200000>;
-};
-
 &removed_region1 {
-	reg = <0 0x86440000 0 0x46c0000>;
+	reg = <0 0x86200000 0 0x4900000>;
 };
 
 &qcom_seecom {
