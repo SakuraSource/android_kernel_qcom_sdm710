@@ -113,7 +113,7 @@ extern struct mutex scm_lmh_lock;
 
 static inline int scm_call2(u32 cmd_id, struct scm_desc *desc)
 {
-	return 0;
+	return -1;
 }
 
 static inline int scm_call2_noretry(u32 cmd_id, struct scm_desc *desc)
